@@ -241,8 +241,8 @@ class DupDetector():
 	# data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
 	# if any of is_parent or ent_type are  mising from 1 ent, then different
 	def isDup_1(self, data1, data2, max_radius = 50):
-		if 'nif' not in data1 or 'nif' not in data2:
-			raise RuntimeError('Error: missing nif(s)!')
+		#if 'nif' not in data1 or 'nif' not in data2:
+		#	raise RuntimeError('Error: missing nif(s)!')
 		#if 'is_parent' not in data1 or 'is_parent' not in data2:
 		#	raise RuntimeError('Error: missing is_parent(s)!')
 		if 'lat' not in data1 or 'lat' not in data2:
