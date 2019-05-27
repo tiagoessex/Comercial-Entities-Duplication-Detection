@@ -417,17 +417,18 @@ class DupDetector():
 	# MAIN DUP FUNC  #
 	##################
 	
-		
+	
+	
 	def isDup(self, data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3]):
 		
 		for algo in order:
-		
 			if algo == 0 and 0 not in ignore:
 				try:
 					if self.isDup_0(data1, data2, min_ratio):
 						return {"DUPLICATED":1,"ALGO":0}
 				except Exception as e:
 					pass
+
 			if algo == 1 and 1 not in ignore:
 				try:
 					if self.isDup_1(data1, data2, max_radius):
@@ -449,7 +450,7 @@ class DupDetector():
 				except Exception as e:
 					pass
 				
-				return {"DUPLICATED":0}
+		return {"DUPLICATED":0}
 
 
 
