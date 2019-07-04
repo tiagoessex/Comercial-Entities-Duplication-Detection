@@ -350,6 +350,25 @@ def test4_3():
 		return False
 
 
+def test4_4():
+	t = DupDetector()
+	d1 = {'name':"nome apelido apelido2", 'address':'rua da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+	d2 = {'name':"nome apelido", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+
+	if t.isDup_3(d1,d2,min_size=3):
+		return True
+	else:
+		return False
+
+def test4_5():
+	t = DupDetector()
+	d1 = {'name':"nome apelido apelido2", 'address':'rua da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+	d2 = {'name':"nome1 apelido", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+
+	if t.isDup_3(d1,d2,min_size=3):
+		return False
+	else:
+		return True	
 
 def runTests():
 	if test1_0() and test1_1() and test1_2() and test1_3() and test1_4() and test1_5() and test1_6() and test1_7() and test1_8():
@@ -368,7 +387,7 @@ def runTests():
 	else:
 		print ("TEST 3 [NOT OK]")
 
-	if test4_0() and test4_1() and test4_2() and test4_3():
+	if test4_0() and test4_1() and test4_2() and test4_3() and test4_4() and test4_5():
 		print ("TEST 4 [OK]")
 	else:
 		print ("TEST 4 [NOT OK]")
