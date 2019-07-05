@@ -97,10 +97,39 @@ def test1_8():
 	else:
 		return False
 		
+# already correctly sanitized
+def test1_9():
+	t = DupDetector()
+	d1 = {'name':"loja treta", 'address':'rua boavista porto portugal'}
+	d2 = {'name':"loja treta", 'address':'avenida boavista porto portugal'}
 
+	if t.isDup_0(d1,d2,min_ratio=85, sanitize = False):
+		return True
+	else:
+		return False
 
+# already but incorrectly sanitized
+def test1_10():
+	t = DupDetector()
+	d1 = {'name':"LOJA TRETA", 'address':'AVENIDA DA BOAVISTA PORTO PORTUGAL'}
+	d2 = {'name':"loja treta", 'address':'avenida boavista porto PORTUGAL'}
 
+	if not t.isDup_0(d1,d2,min_ratio=85, sanitize = False):
+		return True
+	else:
+		return False
 
+# already but incorrectly sanitized
+def test1_11():
+	t = DupDetector()
+	d1 = {'name':"löjá tretá", 'address':'avenidã boavistã portó portugal'}
+	d2 = {'name':"loja treta", 'address':'avenida boavista porto portugal'}
+
+	if not t.isDup_0(d1,d2,min_ratio=85, sanitize = False):
+		return True
+	else:
+		return False
+		
 
 #####
 # 2 #
@@ -201,6 +230,16 @@ def test2_9():
 	t = DupDetector()
 	d1 = {'nif':123456,'lon':8.0,'lat':40.0,'ent_type':None, 'is_parent':1}
 	d2 = {'nif':123456,'lon':8.0,'lat':40.0,'ent_type':None, 'is_parent':1}
+
+	if t.isDup_1(d1,d2) == True:
+		return True
+	else:
+		return False
+
+def test2_10():
+	t = DupDetector()
+	d1 = {'lon':8.0,'lat':40.0,'ent_type':None, 'is_parent':1}
+	d2 = {'lon':8.0,'lat':40.0,'ent_type':None, 'is_parent':1}
 
 	if t.isDup_1(d1,d2) == True:
 		return True
@@ -370,14 +409,37 @@ def test4_5():
 	else:
 		return True	
 
+# already correctly sanitized
+def test4_6():
+	t = DupDetector()
+	d1 = {'name':"nome apelido apelido", 'address':'rua boavista porto portugal'}
+	d2 = {'name':"nome apelido", 'address':'avenida boavista porto portugal'}
+
+	if t.isDup_3(d1,d2,min_size=3, sanitize = False):
+		return True
+	else:
+		return False	
+		
+# already but incorrectly sanitized
+def test4_7():
+	t = DupDetector()
+	d1 = {'name':"nome apelido", 'address':'rua boavista porto portugal'}
+	d2 = {'name':"nome Apelido", 'address':'avenida boavista porto portugal'}
+
+	if t.isDup_3(d1,d2,min_size=3, sanitize = False):
+		return False
+	else:
+		return True
+
+
 def runTests():
-	if test1_0() and test1_1() and test1_2() and test1_3() and test1_4() and test1_5() and test1_6() and test1_7() and test1_8():
+	if test1_0() and test1_1() and test1_2() and test1_3() and test1_4() and test1_5() and test1_6() and test1_7() and test1_8() and test1_9() and test1_10() and test1_11():
 		print ("TEST 1 [OK]")
 	else:
 		print ("TEST 1 [NOT OK]")
 
 
-	if test2_0() and test2_1() and test2_2() and test2_3() and test2_4() and test2_5() and test2_6() and test2_7() and test2_8() and test2_9():
+	if test2_0() and test2_1() and test2_2() and test2_3() and test2_4() and test2_5() and test2_6() and test2_7() and test2_8() and test2_9() and test2_10():
 		print ("TEST 2 [OK]")
 	else:
 		print ("TEST 2 [NOT OK]")
@@ -387,7 +449,7 @@ def runTests():
 	else:
 		print ("TEST 3 [NOT OK]")
 
-	if test4_0() and test4_1() and test4_2() and test4_3() and test4_4() and test4_5():
+	if test4_0() and test4_1() and test4_2() and test4_3() and test4_4() and test4_5() and test4_6() and test4_7():
 		print ("TEST 4 [OK]")
 	else:
 		print ("TEST 4 [NOT OK]")

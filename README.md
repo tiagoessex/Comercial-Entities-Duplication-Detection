@@ -6,7 +6,7 @@ Version: 0.0.1
 
 * Main function:
 
-       isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore = [], order = [0,1,2,3])
+       isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore = [], order = [0,1,2,3], sanitize = True)
 
 * Where:
 	*  *data1* and *data2* are dictionaries:
@@ -17,6 +17,7 @@ Version: 0.0.1
 	*	*min_size*: all words size less min_size are eliminated (algo 3)
 	*	*ignore*: list of algorithms to ignore
 	*	*order*: algorithm's application order
+	*   *sanitize*: is input is not sanitized, that is, if both the addresses and names are already processed or not (lowercase, extra-spaces removed, ...). 
 
 
 # Returns:
@@ -26,11 +27,13 @@ Version: 0.0.1
 	
 * Else, returns: *{"DUPLICATED":0}*
 
+# Notes:
+* Albeit all input fields are optional, algorithms usage depends on them.
 
 # Algorithms:
 
 * Algo 1: Levenshtein over *names* and *addresses*
-* Algo 2: Distance between two coordinates sets with the same *NIF*
+* Algo 2: Distance between two set of coordinates is less than X meters
 * Algo 3: Levenshtein over the phonetic string of the *names* and *addresses*
 * Algo 4: *name* and*address* of entity X is contained or contains the *name* and *address* of entity Y.
 
@@ -42,7 +45,7 @@ Version: 0.0.1
 * phonetics
 
 
-# Example usage
+# Example 1 - using the main function *isDup* to get first algorithm to flag possible duplication:
 
 
     import duplicated as duplicated
@@ -53,3 +56,16 @@ Version: 0.0.1
     
     print (t.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 
+
+# Example 2 - using a particular algorithm:
+
+
+    from Duplicated import DupDetector
+    	
+	t = DupDetector()
+	d1 = {'name':"bar a treta", 'address':'r. da boavista n 50, porto, portugal'}
+	d2 = {'name':"bar da treta", 'address':'av. da boavista n 50, porto, portugal'}
+	if t.isDup_0(d1,d2,min_ratio=85) and not t.isDup_0(d1,d2,min_ratio=90):
+		return True
+	else:
+		return False

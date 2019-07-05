@@ -1,6 +1,6 @@
 """
 
-Input data (all fields opctional):
+Input data (all fields optional):
 	data1: {name, address, nif, is_parent, ent_type, lat, lon}
 	data2: {name, address, nif, is_parent, ent_type, lat, lon}
 
@@ -35,7 +35,7 @@ requirements:
 
 from .Duplicated import DupDetector
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 

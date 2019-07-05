@@ -1,8 +1,15 @@
-# pip install fuzzywuzzy
-# pip install python-Levenshtein
-# pip install geopy
-# pip install phonetics
-
+####################################################################
+#
+#	install:
+# 		pip install fuzzywuzzy
+# 		pip install python-Levenshtein
+# 		pip install geopy
+# 		pip install phonetics
+#
+#	TODO:
+#		- remove duplicated code at the sanitize conditions
+#
+####################################################################
 
 import unicodedata
 import re
@@ -91,27 +98,14 @@ class DupDetector():
 		#ss = re.sub(r'\b\w{1,3}\b', '', s)
 		return ss
 
-	# prepare/clean the address
-	def sanitizeMorada(self, addr, remove_all_spaces = False):
-		temp = addr.lower()	
+	# prepare/clean the names or addresses
+	def sanitizeStr(self, data, remove_all_spaces = False, replace_abrv = False):
+		temp = data.lower()	
 		temp = self.replacePTChars(temp)
 		temp = self.replaceAllNonAlfaNum(temp)
-		temp = self.replaceAbrevs(temp)
+		if replace_abrv:
+			temp = self.replaceAbrevs(temp)
 		temp = self.removeSmallWords(temp)
-		temp = self.removeAllExtraSpaces(temp)
-		if not remove_all_spaces:
-			temp = self.removeAllExtraSpaces(temp)
-		else:
-			temp = self.removeAllSpaces(temp)
-		return temp
-		
-	# prepare/clean the name
-	def sanitizeNome(self, nome, remove_all_spaces = False):
-		temp = nome.lower()	
-		temp = self.replacePTChars(temp)
-		temp = self.replaceAllNonAlfaNum(temp)
-		temp = self.removeSmallWords(temp)
-		temp = self.removeAllExtraSpaces(temp)
 		if not remove_all_spaces:
 			temp = self.removeAllExtraSpaces(temp)
 		else:
@@ -143,7 +137,7 @@ class DupDetector():
 	def getPhoneticsRatioMorada(self, str1, str2):
 		return fuzz.ratio(phonetics.metaphone(str1),phonetics.metaphone(str2))
 
-	def isSameNumbers(self, s1, s2, keyword):
+	def isSameNumber(self, s1, s2, keyword):
 		match1 = re.search(keyword + '\s*(\d+)', s1)
 		match2 = re.search(keyword + '\s*(\d+)', s2)
 		if match1 and match2:
@@ -152,14 +146,20 @@ class DupDetector():
 		return False
 
 
-	def isNameIn(self, s1, s2 ,n):
-		temp1 = self.keepIfMinSize(self.removeAllExtraSpaces(s1).split(" "),n)
-		temp2 = self.keepIfMinSize(self.removeAllExtraSpaces(s2).split(" "),n)
+	def isNameIn(self, s1, s2 ,n, sanitize = True):
+		if sanitize:
+			s1 = self.removeAllExtraSpaces(s1)
+			s2 = self.removeAllExtraSpaces(s2)
+		temp1 = self.keepIfMinSize(s1.split(" "),n)
+		temp2 = self.keepIfMinSize(s2.split(" "),n)
 		return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
 
-	def isAddressIn(self, s1, s2 ,n):
-		temp1 = self.keepIfMinSize(self.removeAllExtraSpaces(s1).split(" "),n)
-		temp2 = self.keepIfMinSize(self.removeAllExtraSpaces(s2).split(" "),n)
+	def isAddressIn(self, s1, s2 ,n, sanitize = True):
+		if sanitize:
+			s1 = self.removeAllExtraSpaces(s1)
+			s2 = self.removeAllExtraSpaces(s2)
+		temp1 = self.keepIfMinSize(s1.split(" "),n)
+		temp2 = self.keepIfMinSize(s2.split(" "),n)
 		return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
 
 
@@ -171,7 +171,7 @@ class DupDetector():
 	# returns true if similar
 	# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
 	# if any of nif or is_parent or ent_type are mising from 1 ent, then different
-	def isDup_0(self, data1, data2, min_ratio = 90):
+	def isDup_0(self, data1, data2, min_ratio = 90, sanitize = True):
 		if 'name' not in data1 or 'name' not in data2:
 			raise RuntimeError('Error: missing name(s)!')
 		if 'address' not in data1 or 'address' not in data2:
@@ -203,10 +203,16 @@ class DupDetector():
 		
 		isBar = False
 		isLoja = False
-		n1 = self.sanitizeNome(data1['name'])
-		n2 = self.sanitizeNome(data2['name'])
-		m1 = self.sanitizeMorada(data1['address'])
-		m2 = self.sanitizeMorada(data2['address'])
+		if sanitize:
+			n1 = self.sanitizeStr(data1['name'])		
+			n2 = self.sanitizeStr(data2['name'])
+			m1 = self.sanitizeStr(data1['address'], replace_abrv = True)
+			m2 = self.sanitizeStr(data2['address'], replace_abrv = True)
+		else:
+			n1 = data1['name']
+			n2 = data2['name']
+			m1 = data1['address']
+			m2 = data2['address']
 		
 		if ' bar ' in n1:
 			isBar = True
@@ -216,10 +222,10 @@ class DupDetector():
 		
 		if self.getRatioNome(n1,n2) > min_ratio and self.getRatioMorada(m1,m2) > min_ratio:
 			if isBar:
-				if not self.isSameNumbers(n1,n2,'bar'):
+				if not self.isSameNumber(n1,n2,'bar'):
 					return False
 			if isLoja:
-				if not self.isSameNumbers(n1,n2,'loja'):
+				if not self.isSameNumber(n1,n2,'loja'):
 					return False
 		
 		
@@ -293,7 +299,7 @@ class DupDetector():
 	# returns true if similar
 	# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
 	# if any of nif or is_parent or ent_type are mising from 1 ent, then different
-	def isDup_2(self, data1, data2, min_ratio = 90):
+	def isDup_2(self, data1, data2, min_ratio = 90, sanitize = True):
 		if 'name' not in data1 or 'name' not in data2:
 			raise RuntimeError('Error: missing name(s)!')
 		if 'address' not in data1 or 'address' not in data2:
@@ -325,23 +331,31 @@ class DupDetector():
 		
 		isBar = False
 		isLoja = False
-		n1 = self.sanitizeNome(data1['name'], True)
-		n2 = self.sanitizeNome(data2['name'], True)
-		m1 = self.sanitizeMorada(data1['address'], True)
-		m2 = self.sanitizeMorada(data2['address'], True)
+		if sanitize:
+			n1 = self.sanitizeStr(data1['name'], remove_all_spaces = True)		
+			n2 = self.sanitizeStr(data2['name'], remove_all_spaces = True)
+			m1 = self.sanitizeStr(data1['address'], remove_all_spaces = True, replace_abrv = True)
+			m2 = self.sanitizeStr(data2['address'], remove_all_spaces = True, replace_abrv = True)
+		else:
+			n1 = data1['name']
+			n2 = data2['name']
+			m1 = data1['address']
+			m2 = data2['address']
+
 		
-		if ' bar ' in self.sanitizeNome(data1['name']):
+	
+		if ' bar ' in n1:
 			isBar = True
-		if ' loja ' in self.sanitizeNome(data2['name']):
+		if ' loja ' in n1:
 			isLoja = True
 		
 		
 		if self.getPhoneticsRatioNome(n1,n2) > min_ratio and self.getPhoneticsRatioNome(m1,m2) > min_ratio:
 			if isBar:
-				if not self.isSameNumbers(n1,n2,'bar'):
+				if not self.isSameNumber(n1,n2,'bar'):
 					return False
 			if isLoja:
-				if not self.isSameNumbers(n1,n2,'loja'):
+				if not self.isSameNumber(n1,n2,'loja'):
 					return False
 		
 		
@@ -361,7 +375,7 @@ class DupDetector():
 	# returns true if similar
 	# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
 	# if any of nif or is_parent or ent_type are mising from 1 ent, then different
-	def isDup_3(self, data1, data2, min_size = 4):
+	def isDup_3(self, data1, data2, min_size = 4, sanitize = True):
 		if 'name' not in data1 or 'name' not in data2:
 			raise RuntimeError('Error: missing name(s)!')
 		if 'address' not in data1 or 'address' not in data2:
@@ -388,15 +402,19 @@ class DupDetector():
 			if data1['nif'] != data2['nif']:
 				return False
 				
-		n1 = self.sanitizeNome(data1['name'])
-		n2 = self.sanitizeNome(data2['name'])
-		m1 = self.sanitizeMorada(data1['address'])
-		m2 = self.sanitizeMorada(data2['address'])
+		if sanitize:
+			n1 = self.sanitizeStr(data1['name'])		
+			n2 = self.sanitizeStr(data2['name'])
+			m1 = self.sanitizeStr(data1['address'], replace_abrv = True)
+			m2 = self.sanitizeStr(data2['address'], replace_abrv = True)
+		else:
+			n1 = data1['name']
+			n2 = data2['name']
+			m1 = data1['address']
+			m2 = data2['address']
 		
-		#print (n1," # ", n2)
-		#print (m1," # ", m2)
 
-		if self.isNameIn(n1,n2,4) and self.isAddressIn(m1,m2,4):
+		if self.isNameIn(n1,n2,4, not sanitize) and self.isAddressIn(m1,m2,4, not sanitize):
 		
 			if 'is_parent' in data1 and 'is_parent' in data2:
 				if data1['is_parent'] != data2['is_parent']:
@@ -419,12 +437,12 @@ class DupDetector():
 	
 	
 	
-	def isDup(self, data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3]):
+	def isDup(self, data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True):
 		
 		for algo in order:
 			if algo == 0 and 0 not in ignore:
 				try:
-					if self.isDup_0(data1, data2, min_ratio):
+					if self.isDup_0(data1, data2, min_ratio, sanitize):
 						return {"DUPLICATED":1,"ALGO":0}
 				except Exception as e:
 					pass
@@ -438,14 +456,14 @@ class DupDetector():
 			
 			if algo == 2 and 2 not in ignore:
 				try:
-					if self.isDup_2(data1, data2, min_ratio):
+					if self.isDup_2(data1, data2, min_ratio, sanitize):
 						return {"DUPLICATED":1,"ALGO":2}
 				except Exception as e:
 					pass
 			
 			if algo == 3 and 3 not in ignore:
 				try:
-					if self.isDup_3(data1, data2, min_size):
+					if self.isDup_3(data1, data2, min_size, sanitize):
 						return {"DUPLICATED":1,"ALGO":3}			
 				except Exception as e:
 					pass
