@@ -137,6 +137,7 @@ class DupDetector():
 	def getPhoneticsRatioMorada(self, str1, str2):
 		return fuzz.ratio(phonetics.metaphone(str1),phonetics.metaphone(str2))
 
+	# check if the first numbers of s1 and s2 match
 	def isSameNumber(self, s1, s2, keyword):
 		match1 = re.search(keyword + '\s*(\d+)', s1)
 		match2 = re.search(keyword + '\s*(\d+)', s2)
@@ -331,16 +332,17 @@ class DupDetector():
 		
 		isBar = False
 		isLoja = False
+		
 		if sanitize:
 			n1 = self.sanitizeStr(data1['name'], remove_all_spaces = True)		
 			n2 = self.sanitizeStr(data2['name'], remove_all_spaces = True)
 			m1 = self.sanitizeStr(data1['address'], remove_all_spaces = True, replace_abrv = True)
 			m2 = self.sanitizeStr(data2['address'], remove_all_spaces = True, replace_abrv = True)
 		else:
-			n1 = data1['name']
-			n2 = data2['name']
-			m1 = data1['address']
-			m2 = data2['address']
+			n1 = removeAllSpaces(data1['name'])
+			n2 = removeAllSpaces(data2['name'])
+			m1 = removeAllSpaces(data1['address'])
+			m2 = removeAllSpaces(data2['address'])
 
 		
 	
