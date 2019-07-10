@@ -154,7 +154,10 @@ def isAddressIn(s1, s2 ,n):
 	return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
 
 
-# checks nif / is_parent / ent_type
+# if any of the fields nif/is_parent/ent_type are present in one entity
+# but not the other then false
+# if any of those are present and both are different then false
+# else true
 def isDataGood(data1,data2):
 	if 'nif' in data1 and 'nif' not in data2:
 		return False
@@ -259,15 +262,11 @@ def isDup_2(data1, data2, min_ratio = 90, checkdata = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if 'address' not in data1 or 'address' not in data2:
-		raise RuntimeError('Error: missing address(s)!')
-			
-	
+		raise RuntimeError('Error: missing address(s)!')			
 	
 	if checkdata:
 		if not isDataGood(data1,data2):
-			return False
-	
-	
+			return False	
 	
 	isBar = False
 	isLoja = False	
@@ -297,13 +296,11 @@ def isDup_3(data1, data2, min_size = 4, checkdata = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if 'address' not in data1 or 'address' not in data2:
-		raise RuntimeError('Error: missing address(s)!')
-	
+		raise RuntimeError('Error: missing address(s)!')	
 	
 	if checkdata:
 		if not isDataGood(data1,data2):
-			return False
-			
+			return False			
 
 	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
 		return True
@@ -319,6 +316,7 @@ def isDup_3(data1, data2, min_size = 4, checkdata = True):
 	
 	
 def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True):
+
 
 	if not isDataGood(data1,data2):
 		return False

@@ -60,13 +60,13 @@ Version: 0.0.1
 # Example 2 - using a particular algorithm:
 
 
-    from Duplicated import \*
+    from Duplicated import *
     	
 	d1 = {'name':"bar a treta", 'address':'r. da boavista n 50, porto, portugal'}
 	d2 = {'name':"bar da treta", 'address':'av. da boavista n 50, porto, portugal'}
 	
 	# sanitize ... only if needed it
-	# note that if *isDup_2* => also requires *remove_all_spaces = False*
+	# note that if isDup_2 => also requires remove_all_spaces = False
 	d1['name'] = sanitizeStr(d1['name'])
 	d2['name'] = sanitizeStr(d2['name'])
 	d1['address'] = sanitizeStr(d1['address'])
