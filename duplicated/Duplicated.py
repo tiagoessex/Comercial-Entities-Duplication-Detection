@@ -115,6 +115,23 @@ def sanitizeStr(data, remove_all_spaces = False, replace_abrv = False):
 # OPERATIONS #
 ##############
 
+def createData(name = None, address = None, is_parent = None, nif = None, ent_type = None):
+	data = {}
+	
+	if name:
+		data['name'] = name
+	if address:
+		data['address'] = address
+	if is_parent:
+		data['is_parent'] = is_parent
+	if nif:
+		data['nif'] = nif
+	if ent_type:
+		data['ent_type'] = ent_type
+	
+	return data
+
+
 def getRatioNome(str1, str2):
 	return fuzz.ratio(str1,str2)
 		
@@ -233,7 +250,8 @@ def isDup_0(data1, data2, min_ratio = 90, checkdata = True):
 
 # returns true if similar
 # data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
-def isDup_1(data1, data2, max_radius = 50, checkdata = True):
+# if checkname then if (lat,lon)1 ~(lat,lon)2 then if getRatioNome(name1, name2) > 90 then true
+def isDup_1(data1, data2, max_radius = 50, checkdata = True, checkname = False):
 	if 'lat' not in data1 or 'lat' not in data2:
 		raise RuntimeError('Error: missing latitude(s)!')
 	if 'lon' not in data1 or 'lon' not in data2:
@@ -249,7 +267,12 @@ def isDup_1(data1, data2, max_radius = 50, checkdata = True):
 	
 	coords_1 = (data1['lat'],data1['lon'])
 	coords_2 = (data2['lat'],data2['lon'])
-	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:			
+	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:
+		
+		if checkname and data1['name'] and data2['name']:
+			if getRatioNome(data1['name'],data2['name']) < 90:
+				return False
+				
 		return True
 		
 	return False
@@ -384,3 +407,15 @@ print (isDup(d1,d2, ignore=[1], min_ratio = 80))	# returns {'DUPLICATED': 0}
 '''
 
 
+'''
+data = createData(name = 'john doe', address = 'main st.', nif = '123456789')
+print (data)
+print (data['nif'])
+'''
+
+'''
+d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
+d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
+    
+print (isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
+'''

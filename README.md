@@ -28,7 +28,8 @@ Version: 0.0.1
 * Else, returns: *{"DUPLICATED":0}*
 
 # Notes:
-* Albeit all input fields are optional, algorithms usage depends on them.
+* Albeit all input fields are optional, algorithm selection depends on them.
+* *IF A FIELD HAS NO VALUE, THEN DO NOT SET IT TO NONE, JUST DO NOT INSERTED IT IN THE DATA STRUCTURE* - use the createData() function to prevent any problem.
 
 # Algorithms:
 
@@ -50,9 +51,8 @@ Version: 0.0.1
 
     import duplicated as duplicated
     	
-
-    d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
-    d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+	d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
+	d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
     
     print (duplicated.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 
@@ -62,8 +62,8 @@ Version: 0.0.1
 
     from Duplicated import *
     	
-	d1 = {'name':"bar a treta", 'address':'r. da boavista n 50, porto, portugal'}
-	d2 = {'name':"bar da treta", 'address':'av. da boavista n 50, porto, portugal'}
+	d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal')
+	d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal')
 	
 	# sanitize ... only if needed it
 	# note that if isDup_2 => also requires remove_all_spaces = False
