@@ -35,7 +35,7 @@ Version: 0.0.1
 * Algo 1: Levenshtein over *names* and *addresses*
 * Algo 2: Distance between two set of coordinates is less than X meters
 * Algo 3: Levenshtein over the phonetic string of the *names* and *addresses*
-* Algo 4: *name* and*address* of entity X is contained or contains the *name* and *address* of entity Y.
+* Algo 4: *name* and *address* of entity X is contained or contains the *name* and *address* of entity Y.
 
 
 # Requirements
@@ -50,22 +50,29 @@ Version: 0.0.1
 
     import duplicated as duplicated
     	
-    t = duplicated.DupDetector()
+
     d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
     d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
     
-    print (t.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
+    print (duplicated.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 
 
 # Example 2 - using a particular algorithm:
 
 
-    from Duplicated import DupDetector
+    from Duplicated import \*
     	
-	t = DupDetector()
 	d1 = {'name':"bar a treta", 'address':'r. da boavista n 50, porto, portugal'}
 	d2 = {'name':"bar da treta", 'address':'av. da boavista n 50, porto, portugal'}
-	if t.isDup_0(d1,d2,min_ratio=85) and not t.isDup_0(d1,d2,min_ratio=90):
+	
+	# sanitize ... only if needed it
+	# note that if *isDup_2* => also requires *remove_all_spaces = False*
+	d1['name'] = sanitizeStr(d1['name'])
+	d2['name'] = sanitizeStr(d2['name'])
+	d1['address'] = sanitizeStr(d1['address'])
+	d2['address'] = sanitizeStr(d2['address'])
+	
+	if isDup_0(d1,d2,min_ratio=85) and not isDup_0(d1,d2,min_ratio=90):
 		return True
 	else:
 		return False

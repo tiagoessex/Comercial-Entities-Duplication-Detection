@@ -6,8 +6,6 @@
 # 		pip install geopy
 # 		pip install phonetics
 #
-#	TODO:
-#		- remove duplicated code at the sanitize conditions
 #
 ####################################################################
 
@@ -23,9 +21,8 @@ import phonetics
 
 
 
-class DupDetector():
 
-	abreviaturas = {
+abreviaturas = {
 		"al":"alameda", "av":"avenida", "az":"azinhaga", "br":"bairro",
 		"bc":"beco", "cc":"calcada", "ccnh":"calcadinha", "cam":"caminho",
 		"csl":"casal", "esc":"escadas", "escnh":"escadinhas", "estr":"estrada",
@@ -47,432 +44,413 @@ class DupDetector():
 		"ass":"associacao", "inst":"instituto", "lug":"lugar", "min":"ministerio",
 		"proj":"projetada", "numero":"sem", "soc":"sociedade", "univ":"universidade",
 		"b":"bloco", "e":"edificio", "l":"lote", "t":"torre", "n":"numero"
-	}
+}
 
 
-	#SIM_RATIO_MIN = 90
 
-	def __init__(self):
-		pass
+############################
+#	SETUP AND CLEANING OPS #
+############################
 
-	############################
-	#	SETUP AND CLEANING OPS #
-	############################
-
-	# replace all special chars for non special
-	# ex: áâãàç -> aaac
-	def replacePTChars(self, s):
-		return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
+# replace all special chars for non special
+# ex: áâãàç -> aaac
+def replacePTChars(s):
+	return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
 
 
-	# if not number or letter then be replaced by by_what
-	def replaceAllNonAlfaNum(self, s, by_what=" "):
-		return re.sub('[^A-Za-z0-9]+', by_what, s)
+# if not number or letter then be replaced by by_what
+def replaceAllNonAlfaNum(s, by_what=" "):
+	return re.sub('[^A-Za-z0-9]+', by_what, s)
 		
-	# including trailing spaces
-	def removeAllExtraSpaces(self, s):
-		#return re.sub(' +', ' ',s)
-		return " ".join(s.split())
+# including trailing spaces
+def removeAllExtraSpaces(s):
+	return " ".join(s.split())
 	
-	# basically, it joins all words into one
-	def removeAllSpaces(self, s):		
-		return s.replace(' ','')
+# basically, it joins all words into one
+def removeAllSpaces(s):		
+	return s.replace(' ','')
 
 
-	# replaces all tokens that have a correspondence in the abreviaturas list
-	# ex: s = "EN 5 lt 10 porto" -> "ESTRADA NACIONAL 5 LOTE 10 PORTO"  
-	def replaceAbrevs(self, addr):
-		tokens = addr.split(' ')
-		for i in range(len(tokens)):
-			if tokens[i] in self.abreviaturas:
-				tokens[i] = self.abreviaturas[tokens[i]]
-		return ' '.join(tokens)
+# replaces all tokens that have a correspondence in the abreviaturas list
+# ex: s = "EN 5 lt 10 porto" -> "ESTRADA NACIONAL 5 LOTE 10 PORTO"  
+def replaceAbrevs(addr):
+	tokens = addr.split(' ')
+	for i in range(len(tokens)):
+		if tokens[i] in abreviaturas:
+			tokens[i] = abreviaturas[tokens[i]]
+	return ' '.join(tokens)
 
 
-	# in some algorithms small words can be considered noise and as such
-	# irrelevant
-	def removeSmallWords(self, s):
-		remove_list = ['DE','DO','DA','DOS','DAS']
-		word_list = s.split()	
-		ss = ' '.join([i for i in word_list if i not in remove_list])
-		#ss = re.sub(r'\b\w{1,3}\b', '', s)
-		return ss
-
-	# prepare/clean the names or addresses
-	def sanitizeStr(self, data, remove_all_spaces = False, replace_abrv = False):
-		temp = data.lower()	
-		temp = self.replacePTChars(temp)
-		temp = self.replaceAllNonAlfaNum(temp)
-		if replace_abrv:
-			temp = self.replaceAbrevs(temp)
-		temp = self.removeSmallWords(temp)
-		if not remove_all_spaces:
-			temp = self.removeAllExtraSpaces(temp)
-		else:
-			temp = self.removeAllSpaces(temp)
-		return temp
-
-	def keepOnlyWords(self, s):
-		return [s1 for s1 in s if s1.isalpha()]
-
-	def keepIfMinSize(self, s,n):
-		return [s1 for s1 in s if (len(s1) >= n or not s1.isalpha()) ]
+# in some algorithms small words can be considered noise and as such
+# irrelevant
+def removeSmallWords(s):
+	remove_list = ['o','a','e','de','do','da','dos','das']
+	word_list = s.split()	
+	ss = ' '.join([i for i in word_list if i not in remove_list])
+	return ss
 
 
+def keepOnlyWords(s):
+	return [s1 for s1 in s if s1.isalpha()]
+
+def keepIfMinSize(s,n):
+	return [s1 for s1 in s if (len(s1) >= n or not s1.isalpha()) ]
 
 
-	##############
-	# OPERATIONS #
-	##############
+# prepare/clean
+def sanitizeStr(data, remove_all_spaces = False, replace_abrv = False):
+	temp = data.lower()	
+	temp = replacePTChars(temp)
+	temp = replaceAllNonAlfaNum(temp)
+	if replace_abrv:	
+		temp = replaceAbrevs(temp)		# only for addresses
+	temp = removeSmallWords(temp)
+	if not remove_all_spaces:
+		temp = removeAllExtraSpaces(temp)
+	else:			
+		temp = removeAllSpaces(temp)	# only for phonetics
+	return temp
 
-	def getRatioNome(self, str1, str2):
-		return fuzz.ratio(str1,str2)
+##############
+# OPERATIONS #
+##############
+
+def getRatioNome(str1, str2):
+	return fuzz.ratio(str1,str2)
 		
-	def getRatioMorada(self, str1, str2):
-		return fuzz.ratio(str1,str2)
+def getRatioMorada(str1, str2):
+	return fuzz.ratio(str1,str2)
 
-	def getPhoneticsRatioNome(self, str1, str2):
-		return fuzz.ratio(phonetics.metaphone(str1),phonetics.metaphone(str2))
+def getPhoneticsRatioNome(str1, str2):
+	return fuzz.ratio(phonetics.metaphone(str1),phonetics.metaphone(str2))
 		
-	def getPhoneticsRatioMorada(self, str1, str2):
-		return fuzz.ratio(phonetics.metaphone(str1),phonetics.metaphone(str2))
+def getPhoneticsRatioMorada(str1, str2):
+	return fuzz.ratio(phonetics.metaphone(str1),phonetics.metaphone(str2))
 
-	# check if the first numbers of s1 and s2 match
-	def isSameNumber(self, s1, s2, keyword):
-		match1 = re.search(keyword + '\s*(\d+)', s1)
-		match2 = re.search(keyword + '\s*(\d+)', s2)
-		if match1 and match2:
-			if match1.group(1) == match2.group(1):
-				return True
+# check if the first numbers of s1 and s2 match
+def isSameNumber(s1, s2, keyword):
+	match1 = re.search(keyword + '\s*(\d+)', s1)
+	match2 = re.search(keyword + '\s*(\d+)', s2)
+	if match1 and match2:
+		if match1.group(1) == match2.group(1):
+			return True
+	return False
+
+
+def isNameIn(s1, s2 ,n):
+#	if sanitize:
+#		s1 = removeAllExtraSpaces(s1)
+#		s2 = removeAllExtraSpaces(s2)
+	temp1 = keepIfMinSize(s1.split(" "),n)
+	temp2 = keepIfMinSize(s2.split(" "),n)
+	return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
+
+def isAddressIn(s1, s2 ,n):
+#	if sanitize:
+#		s1 = removeAllExtraSpaces(s1)
+#		s2 = removeAllExtraSpaces(s2)
+	temp1 = keepIfMinSize(s1.split(" "),n)
+	temp2 = keepIfMinSize(s2.split(" "),n)
+	return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
+
+
+
+##############
+# ALGO IMPL  #
+##############
+
+# returns true if similar
+# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
+# if nif or is_parent or ent_type are mising from 1 ent => different
+def isDup_0(data1, data2, min_ratio = 90):
+	if 'name' not in data1 or 'name' not in data2:
+		raise RuntimeError('Error: missing name(s)!')
+	if 'address' not in data1 or 'address' not in data2:
+		raise RuntimeError('Error: missing address(s)!')
+
+
+
+	if 'nif' in data1 and 'nif' not in data2:
 		return False
+	if 'nif' not in data1 and 'nif' in data2:
+		return False		
+		
+	if 'is_parent' in data1 and 'is_parent' not in data2:
+		return False
+	if 'is_parent' not in data1 and 'is_parent' in data2:
+		return False
+		
+	if 'ent_type' in data1 and 'ent_type' not in data2:
+		return False
+	if 'ent_type' not in data1 and 'ent_type' in data2:
+		return False					
 
-
-	def isNameIn(self, s1, s2 ,n, sanitize = True):
-		if sanitize:
-			s1 = self.removeAllExtraSpaces(s1)
-			s2 = self.removeAllExtraSpaces(s2)
-		temp1 = self.keepIfMinSize(s1.split(" "),n)
-		temp2 = self.keepIfMinSize(s2.split(" "),n)
-		return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
-
-	def isAddressIn(self, s1, s2 ,n, sanitize = True):
-		if sanitize:
-			s1 = self.removeAllExtraSpaces(s1)
-			s2 = self.removeAllExtraSpaces(s2)
-		temp1 = self.keepIfMinSize(s1.split(" "),n)
-		temp2 = self.keepIfMinSize(s2.split(" "),n)
-		return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
-
-
-
-	##############
-	# ALGO IMPL  #
-	##############
-
-	# returns true if similar
-	# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-	# if any of nif or is_parent or ent_type are mising from 1 ent, then different
-	def isDup_0(self, data1, data2, min_ratio = 90, sanitize = True):
-		if 'name' not in data1 or 'name' not in data2:
-			raise RuntimeError('Error: missing name(s)!')
-		if 'address' not in data1 or 'address' not in data2:
-			raise RuntimeError('Error: missing address(s)!')
-	
-	
-	
-		if 'nif' in data1 and 'nif' not in data2:
+	# if nifs <> and not false => False
+	if 'nif' in data1 and 'nif' in data2:
+		if data1['nif'] != data2['nif']:
 			return False
-		if 'nif' not in data1 and 'nif' in data2:
-			return False		
+	
+	
+	
+	isBar = False
+	isLoja = False
+	
+	if ' bar ' in data1['name']:
+		isBar = True
+	if ' loja ' in data1['name']:
+		isLoja = True
+	
+	
+	if getRatioNome(data1['name'],data2['name']) > min_ratio and getRatioMorada( data1['address'], data2['address']) > min_ratio:
+		if isBar:
+			if not isSameNumber(data1['name'],data2['name'],'bar'):
+				return False
+		if isLoja:
+			if not isSameNumber(data1['name'],data2['name'],'loja'):
+				return False
+	
+	
+		if 'is_parent' in data1 and 'is_parent' in data2:
+			if data1['is_parent'] != data2['is_parent']:
+				return False
+		
+		if 'ent_type' in data1 and 'ent_type' in data2:
+			if data1['ent_type'] != data2['ent_type']:
+				return False
+		return True
+	
+	return False
+
+
+
+
+# returns true if similar
+# data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
+def isDup_1(data1, data2, max_radius = 50):
+	if 'lat' not in data1 or 'lat' not in data2:
+		raise RuntimeError('Error: missing latitude(s)!')
+	if 'lon' not in data1 or 'lon' not in data2:
+		raise RuntimeError('Error: missing longitude(s)!')
+	
+	
+	
+	if 'nif' in data1 and 'nif' not in data2:
+		return False
+	if 'nif' not in data1 and 'nif' in data2:
+		return False	
+	
+	if 'is_parent' in data1 and 'is_parent' not in data2:
+		return False
+	if 'is_parent' not in data1 and 'is_parent' in data2:
+		return False
+		
+	if 'ent_type' in data1 and 'ent_type' not in data2:
+		return False
+	if 'ent_type' not in data1 and 'ent_type' in data2:
+		return False	
 			
-		if 'is_parent' in data1 and 'is_parent' not in data2:
+	
+	# if nifs <> and not false => False
+	if 'nif' in data1 and 'nif' in data2:
+		if data1['nif'] != data2['nif']:
 			return False
-		if 'is_parent' not in data1 and 'is_parent' in data2:
+	
+	
+	
+	coords_1 = (data1['lat'],data1['lon'])
+	coords_2 = (data2['lat'],data2['lon'])
+	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:
+		if 'is_parent' in data1 and 'is_parent' in data2:
+			if data1['is_parent'] != data2['is_parent']:
+				return False
+		if 'ent_type' in data1 and 'ent_type' in data2:
+			if data1['ent_type'] != data2['ent_type']:
+				return False
+					
+		return True
+		
+	return False
+
+
+# returns true if similar
+# it only works until the first space => remove all spaces
+# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
+def isDup_2(data1, data2, min_ratio = 90):
+	if 'name' not in data1 or 'name' not in data2:
+		raise RuntimeError('Error: missing name(s)!')
+	if 'address' not in data1 or 'address' not in data2:
+		raise RuntimeError('Error: missing address(s)!')
+			
+	
+	
+	if 'nif' in data1 and 'nif' not in data2:
+		return False
+	if 'nif' not in data1 and 'nif' in data2:
+		return False	
+		
+	if 'is_parent' in data1 and 'is_parent' not in data2:
+		return False
+	if 'is_parent' not in data1 and 'is_parent' in data2:
+		return False
+		
+	if 'ent_type' in data1 and 'ent_type' not in data2:
+		return False
+	if 'ent_type' not in data1 and 'ent_type' in data2:
+		return False					
+
+	# if nifs <> and not false => False
+	if 'nif' in data1 and 'nif' in data2:
+		if data1['nif'] != data2['nif']:
+			return False
+	
+	
+	
+	isBar = False
+	isLoja = False	
+
+	if ' bar ' in data1['name']:
+		isBar = True
+	if ' loja ' in data1['name']:
+		isLoja = True
+	
+	
+	if getPhoneticsRatioNome(data1['name'],data2['name']) > min_ratio and getPhoneticsRatioNome(data1['address'],data2['address']) > min_ratio:
+		if isBar:
+			if not isSameNumber(data1['name'],data2['name'],'bar'):
+				return False
+		if isLoja:
+			if not isSameNumber(data1['name'],data2['name'],'loja'):
+				return False
+	
+	
+		if 'is_parent' in data1 and 'is_parent' in data2:
+			if data1['is_parent'] != data2['is_parent']:
+				return False
+		
+		if 'ent_type' in data1 and 'ent_type' in data2:
+			if data1['ent_type'] != data2['ent_type']:
+				return False
+		
+		return True
+		
+	return False
+
+
+# returns true if similar
+# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
+def isDup_3(data1, data2, min_size = 4):
+	if 'name' not in data1 or 'name' not in data2:
+		raise RuntimeError('Error: missing name(s)!')
+	if 'address' not in data1 or 'address' not in data2:
+		raise RuntimeError('Error: missing address(s)!')
+	
+	
+	if 'nif' in data1 and 'nif' not in data2:
+		return False
+	if 'nif' not in data1 and 'nif' in data2:
+		return False	
+		
+	if 'is_parent' in data1 and 'is_parent' not in data2:
+		return False
+	if 'is_parent' not in data1 and 'is_parent' in data2:
+		return False
+		
+	if 'ent_type' in data1 and 'ent_type' not in data2:
+		return False
+	if 'ent_type' not in data1 and 'ent_type' in data2:
+		return False					
+
+	# if nifs <> and not false => False
+	if 'nif' in data1 and 'nif' in data2:
+		if data1['nif'] != data2['nif']:
 			return False
 			
-		if 'ent_type' in data1 and 'ent_type' not in data2:
-			return False
-		if 'ent_type' not in data1 and 'ent_type' in data2:
-			return False					
 
-		# if nifs <> and not false => False
-		if 'nif' in data1 and 'nif' in data2:
-			if data1['nif'] != data2['nif']:
+	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):
+	
+		if 'is_parent' in data1 and 'is_parent' in data2:
+			if data1['is_parent'] != data2['is_parent']:
+				return False
+		
+		if 'ent_type' in data1 and 'ent_type' in data2:
+			if data1['ent_type'] != data2['ent_type']:
 				return False
 		
 		
+		return True
 		
-		isBar = False
-		isLoja = False
-		if sanitize:
-			n1 = self.sanitizeStr(data1['name'])		
-			n2 = self.sanitizeStr(data2['name'])
-			m1 = self.sanitizeStr(data1['address'], replace_abrv = True)
-			m2 = self.sanitizeStr(data2['address'], replace_abrv = True)
-		else:
-			n1 = data1['name']
-			n2 = data2['name']
-			m1 = data1['address']
-			m2 = data2['address']
-		
-		if ' bar ' in n1:
-			isBar = True
-		if ' loja ' in n1:
-			isLoja = True
-		
-		
-		if self.getRatioNome(n1,n2) > min_ratio and self.getRatioMorada(m1,m2) > min_ratio:
-			if isBar:
-				if not self.isSameNumber(n1,n2,'bar'):
-					return False
-			if isLoja:
-				if not self.isSameNumber(n1,n2,'loja'):
-					return False
-		
-		
-			if 'is_parent' in data1 and 'is_parent' in data2:
-				if data1['is_parent'] != data2['is_parent']:
-					return False
-			
-			if 'ent_type' in data1 and 'ent_type' in data2:
-				if data1['ent_type'] != data2['ent_type']:
-					return False
-			return True
-		
-		return False
+	return False
 
 
 
-
-	# returns true if similar
-	# data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
-	# if any of is_parent or ent_type are  mising from 1 ent, then different
-	def isDup_1(self, data1, data2, max_radius = 50):
-		#if 'nif' not in data1 or 'nif' not in data2:
-		#	raise RuntimeError('Error: missing nif(s)!')
-		#if 'is_parent' not in data1 or 'is_parent' not in data2:
-		#	raise RuntimeError('Error: missing is_parent(s)!')
-		if 'lat' not in data1 or 'lat' not in data2:
-			raise RuntimeError('Error: missing latitude(s)!')
-		if 'lon' not in data1 or 'lon' not in data2:
-			raise RuntimeError('Error: missing longitude(s)!')
-		
-		
-		
-		if 'nif' in data1 and 'nif' not in data2:
-			return False
-		if 'nif' not in data1 and 'nif' in data2:
-			return False	
-		
-		if 'is_parent' in data1 and 'is_parent' not in data2:
-			return False
-		if 'is_parent' not in data1 and 'is_parent' in data2:
-			return False
-			
-		if 'ent_type' in data1 and 'ent_type' not in data2:
-			return False
-		if 'ent_type' not in data1 and 'ent_type' in data2:
-			return False	
-				
-		
-		# if nifs <> and not false => False
-		if 'nif' in data1 and 'nif' in data2:
-			if data1['nif'] != data2['nif']:
-				return False
-		
-		
-		
-		coords_1 = (data1['lat'],data1['lon'])
-		coords_2 = (data2['lat'],data2['lon'])
-		if geopy.distance.distance(coords_1, coords_2).meters < max_radius:
-			if 'is_parent' in data1 and 'is_parent' in data2:
-				if data1['is_parent'] != data2['is_parent']:
-					return False
-			if 'ent_type' in data1 and 'ent_type' in data2:
-				if data1['ent_type'] != data2['ent_type']:
-					return False
-						
-			return True
-			
-		return False
-
-
-	# returns true if similar
-	# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-	# if any of nif or is_parent or ent_type are mising from 1 ent, then different
-	def isDup_2(self, data1, data2, min_ratio = 90, sanitize = True):
-		if 'name' not in data1 or 'name' not in data2:
-			raise RuntimeError('Error: missing name(s)!')
-		if 'address' not in data1 or 'address' not in data2:
-			raise RuntimeError('Error: missing address(s)!')
-				
-		
-		
-		if 'nif' in data1 and 'nif' not in data2:
-			return False
-		if 'nif' not in data1 and 'nif' in data2:
-			return False	
-			
-		if 'is_parent' in data1 and 'is_parent' not in data2:
-			return False
-		if 'is_parent' not in data1 and 'is_parent' in data2:
-			return False
-			
-		if 'ent_type' in data1 and 'ent_type' not in data2:
-			return False
-		if 'ent_type' not in data1 and 'ent_type' in data2:
-			return False					
-
-		# if nifs <> and not false => False
-		if 'nif' in data1 and 'nif' in data2:
-			if data1['nif'] != data2['nif']:
-				return False
-		
-		
-		
-		isBar = False
-		isLoja = False
-		
-		if sanitize:
-			n1 = self.sanitizeStr(data1['name'], remove_all_spaces = True)		
-			n2 = self.sanitizeStr(data2['name'], remove_all_spaces = True)
-			m1 = self.sanitizeStr(data1['address'], remove_all_spaces = True, replace_abrv = True)
-			m2 = self.sanitizeStr(data2['address'], remove_all_spaces = True, replace_abrv = True)
-		else:
-			n1 = removeAllSpaces(data1['name'])
-			n2 = removeAllSpaces(data2['name'])
-			m1 = removeAllSpaces(data1['address'])
-			m2 = removeAllSpaces(data2['address'])
-
-		
-	
-		if ' bar ' in n1:
-			isBar = True
-		if ' loja ' in n1:
-			isLoja = True
-		
-		
-		if self.getPhoneticsRatioNome(n1,n2) > min_ratio and self.getPhoneticsRatioNome(m1,m2) > min_ratio:
-			if isBar:
-				if not self.isSameNumber(n1,n2,'bar'):
-					return False
-			if isLoja:
-				if not self.isSameNumber(n1,n2,'loja'):
-					return False
-		
-		
-			if 'is_parent' in data1 and 'is_parent' in data2:
-				if data1['is_parent'] != data2['is_parent']:
-					return False
-			
-			if 'ent_type' in data1 and 'ent_type' in data2:
-				if data1['ent_type'] != data2['ent_type']:
-					return False
-			
-			return True
-			
-		return False
-
-
-	# returns true if similar
-	# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-	# if any of nif or is_parent or ent_type are mising from 1 ent, then different
-	def isDup_3(self, data1, data2, min_size = 4, sanitize = True):
-		if 'name' not in data1 or 'name' not in data2:
-			raise RuntimeError('Error: missing name(s)!')
-		if 'address' not in data1 or 'address' not in data2:
-			raise RuntimeError('Error: missing address(s)!')
-		
-		
-		if 'nif' in data1 and 'nif' not in data2:
-			return False
-		if 'nif' not in data1 and 'nif' in data2:
-			return False	
-			
-		if 'is_parent' in data1 and 'is_parent' not in data2:
-			return False
-		if 'is_parent' not in data1 and 'is_parent' in data2:
-			return False
-			
-		if 'ent_type' in data1 and 'ent_type' not in data2:
-			return False
-		if 'ent_type' not in data1 and 'ent_type' in data2:
-			return False					
-
-		# if nifs <> and not false => False
-		if 'nif' in data1 and 'nif' in data2:
-			if data1['nif'] != data2['nif']:
-				return False
-				
-		if sanitize:
-			n1 = self.sanitizeStr(data1['name'])		
-			n2 = self.sanitizeStr(data2['name'])
-			m1 = self.sanitizeStr(data1['address'], replace_abrv = True)
-			m2 = self.sanitizeStr(data2['address'], replace_abrv = True)
-		else:
-			n1 = data1['name']
-			n2 = data2['name']
-			m1 = data1['address']
-			m2 = data2['address']
-		
-
-		if self.isNameIn(n1,n2,4, not sanitize) and self.isAddressIn(m1,m2,4, not sanitize):
-		
-			if 'is_parent' in data1 and 'is_parent' in data2:
-				if data1['is_parent'] != data2['is_parent']:
-					return False
-			
-			if 'ent_type' in data1 and 'ent_type' in data2:
-				if data1['ent_type'] != data2['ent_type']:
-					return False
-			
-			
-			return True
-			
-		return False
-
-
-
-	##################
-	# MAIN DUP FUNC  #
-	##################
+##################
+# MAIN DUP FUNC  #
+##################
 	
 	
 	
-	def isDup(self, data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True):
+def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True):
+
+	if sanitize:
+		if 'name' in data1:
+			data1['name'] = sanitizeStr(data1['name'])		
+		if 'name' in data2:
+			data2['name'] = sanitizeStr(data2['name'])
+		if 'address' in data1:
+			data1['address'] = sanitizeStr(data1['address'], replace_abrv = True)
+		if 'address' in data2:
+			data2['address'] = sanitizeStr(data2['address'], replace_abrv = True)
+	
+	for algo in order:
+		if algo == 0 and 0 not in ignore:
+			try:
+				if isDup_0(data1, data2, min_ratio):
+					return {"DUPLICATED":1,"ALGO":0}
+			except Exception as e:
+				pass
+
+		if algo == 1 and 1 not in ignore:
+			try:
+				if isDup_1(data1, data2, max_radius):
+					return {"DUPLICATED":1,"ALGO":1}
+			except Exception as e:
+				pass
 		
-		for algo in order:
-			if algo == 0 and 0 not in ignore:
-				try:
-					if self.isDup_0(data1, data2, min_ratio, sanitize):
-						return {"DUPLICATED":1,"ALGO":0}
-				except Exception as e:
-					pass
+		if algo == 2 and 2 not in ignore:
+			try:
+				d1 = data1.copy()
+				d2 = data2.copy()
+				if sanitize:
+					if 'name' in data1:
+						d1['name'] = removeAllSpaces(data1['name'])		
+					if 'name' in data2:
+						d2['name'] = removeAllSpaces(data2['name'])
+					if 'address' in data1:
+						d1['address'] = removeAllSpaces(data1['address'])
+					if 'address' in data2:
+						d2['address'] = removeAllSpaces(data2['address'])
 
-			if algo == 1 and 1 not in ignore:
-				try:
-					if self.isDup_1(data1, data2, max_radius):
-						return {"DUPLICATED":1,"ALGO":1}
-				except Exception as e:
-					pass
-			
-			if algo == 2 and 2 not in ignore:
-				try:
-					if self.isDup_2(data1, data2, min_ratio, sanitize):
-						return {"DUPLICATED":1,"ALGO":2}
-				except Exception as e:
-					pass
-			
-			if algo == 3 and 3 not in ignore:
-				try:
-					if self.isDup_3(data1, data2, min_size, sanitize):
-						return {"DUPLICATED":1,"ALGO":3}			
-				except Exception as e:
-					pass
-				
-		return {"DUPLICATED":0}
+				if isDup_2(d1, d2, min_ratio):
+					return {"DUPLICATED":1,"ALGO":2}
+			except Exception as e:
+				pass	
+
+
+		if algo == 3 and 3 not in ignore:
+			try:
+				if isDup_3(data1, data2, min_size):
+					return {"DUPLICATED":1,"ALGO":3}			
+			except Exception as e:
+				pass
+	return {"DUPLICATED":0}
 
 
 
+'''
+d1 = {'name':"a loja 1 a treta", 'address':'r. da cdsxczxcds n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10,"lat":20}
+d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10.00005,"lat":20}
+
+print (isDup(d1,d2, ignore=[1], min_ratio = 80))	# returns {'DUPLICATED': 0}
+'''
 
 

@@ -17,12 +17,24 @@ Returns:
 
 Usage example:
 
-	t = DupDetector()
-	d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
-	d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
 
-	print (t.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
+	using the main function:
+	
+		d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+		d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
 
+		print (t.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
+
+
+	using a particular algorithm:
+	
+		d1 = {'name':"bar a treta", 'address':'r. da boavista n 50, porto, portugal'}
+		d2 = {'name':"bar da treta", 'address':'av. da boavista n 50, porto, portugal'}
+		
+		if isDup_0(d1,d2,min_ratio=85):
+			return True
+		else:
+			return False
 	
 
 requirements:
@@ -33,9 +45,9 @@ requirements:
 
 """
 
-from .Duplicated import DupDetector
+from .Duplicated import *
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 
 
