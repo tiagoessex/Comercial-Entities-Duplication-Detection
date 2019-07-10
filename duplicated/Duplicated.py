@@ -154,22 +154,8 @@ def isAddressIn(s1, s2 ,n):
 	return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
 
 
-
-##############
-# ALGO IMPL  #
-##############
-
-# returns true if similar
-# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-# if nif or is_parent or ent_type are mising from 1 ent => different
-def isDup_0(data1, data2, min_ratio = 90):
-	if 'name' not in data1 or 'name' not in data2:
-		raise RuntimeError('Error: missing name(s)!')
-	if 'address' not in data1 or 'address' not in data2:
-		raise RuntimeError('Error: missing address(s)!')
-
-
-
+# checks nif / is_parent / ent_type
+def isDataGood(data1,data2):
 	if 'nif' in data1 and 'nif' not in data2:
 		return False
 	if 'nif' not in data1 and 'nif' in data2:
@@ -183,15 +169,41 @@ def isDup_0(data1, data2, min_ratio = 90):
 	if 'ent_type' in data1 and 'ent_type' not in data2:
 		return False
 	if 'ent_type' not in data1 and 'ent_type' in data2:
-		return False					
-
+		return False
+			
 	# if nifs <> and not false => False
 	if 'nif' in data1 and 'nif' in data2:
 		if data1['nif'] != data2['nif']:
 			return False
 	
+	if 'is_parent' in data1 and 'is_parent' in data2:
+		if data1['is_parent'] != data2['is_parent']:
+			return False
+		
+	if 'ent_type' in data1 and 'ent_type' in data2:
+		if data1['ent_type'] != data2['ent_type']:
+			return False
 	
-	
+	return True
+
+##############
+# ALGO IMPL  #
+##############
+
+# returns true if similar
+# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
+# if nif or is_parent or ent_type are mising from 1 ent => different
+def isDup_0(data1, data2, min_ratio = 90, checkdata = True):
+	if 'name' not in data1 or 'name' not in data2:
+		raise RuntimeError('Error: missing name(s)!')
+	if 'address' not in data1 or 'address' not in data2:
+		raise RuntimeError('Error: missing address(s)!')
+
+	if checkdata:
+		if not isDataGood(data1,data2):
+			return False
+
+
 	isBar = False
 	isLoja = False
 	
@@ -207,16 +219,8 @@ def isDup_0(data1, data2, min_ratio = 90):
 				return False
 		if isLoja:
 			if not isSameNumber(data1['name'],data2['name'],'loja'):
-				return False
-	
-	
-		if 'is_parent' in data1 and 'is_parent' in data2:
-			if data1['is_parent'] != data2['is_parent']:
-				return False
-		
-		if 'ent_type' in data1 and 'ent_type' in data2:
-			if data1['ent_type'] != data2['ent_type']:
-				return False
+				return False	
+
 		return True
 	
 	return False
@@ -226,7 +230,7 @@ def isDup_0(data1, data2, min_ratio = 90):
 
 # returns true if similar
 # data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
-def isDup_1(data1, data2, max_radius = 50):
+def isDup_1(data1, data2, max_radius = 50, checkdata = True):
 	if 'lat' not in data1 or 'lat' not in data2:
 		raise RuntimeError('Error: missing latitude(s)!')
 	if 'lon' not in data1 or 'lon' not in data2:
@@ -234,39 +238,15 @@ def isDup_1(data1, data2, max_radius = 50):
 	
 	
 	
-	if 'nif' in data1 and 'nif' not in data2:
-		return False
-	if 'nif' not in data1 and 'nif' in data2:
-		return False	
-	
-	if 'is_parent' in data1 and 'is_parent' not in data2:
-		return False
-	if 'is_parent' not in data1 and 'is_parent' in data2:
-		return False
-		
-	if 'ent_type' in data1 and 'ent_type' not in data2:
-		return False
-	if 'ent_type' not in data1 and 'ent_type' in data2:
-		return False	
-			
-	
-	# if nifs <> and not false => False
-	if 'nif' in data1 and 'nif' in data2:
-		if data1['nif'] != data2['nif']:
+	if checkdata:
+		if not isDataGood(data1,data2):
 			return False
 	
 	
 	
 	coords_1 = (data1['lat'],data1['lon'])
 	coords_2 = (data2['lat'],data2['lon'])
-	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:
-		if 'is_parent' in data1 and 'is_parent' in data2:
-			if data1['is_parent'] != data2['is_parent']:
-				return False
-		if 'ent_type' in data1 and 'ent_type' in data2:
-			if data1['ent_type'] != data2['ent_type']:
-				return False
-					
+	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:			
 		return True
 		
 	return False
@@ -275,7 +255,7 @@ def isDup_1(data1, data2, max_radius = 50):
 # returns true if similar
 # it only works until the first space => remove all spaces
 # data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-def isDup_2(data1, data2, min_ratio = 90):
+def isDup_2(data1, data2, min_ratio = 90, checkdata = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if 'address' not in data1 or 'address' not in data2:
@@ -283,24 +263,8 @@ def isDup_2(data1, data2, min_ratio = 90):
 			
 	
 	
-	if 'nif' in data1 and 'nif' not in data2:
-		return False
-	if 'nif' not in data1 and 'nif' in data2:
-		return False	
-		
-	if 'is_parent' in data1 and 'is_parent' not in data2:
-		return False
-	if 'is_parent' not in data1 and 'is_parent' in data2:
-		return False
-		
-	if 'ent_type' in data1 and 'ent_type' not in data2:
-		return False
-	if 'ent_type' not in data1 and 'ent_type' in data2:
-		return False					
-
-	# if nifs <> and not false => False
-	if 'nif' in data1 and 'nif' in data2:
-		if data1['nif'] != data2['nif']:
+	if checkdata:
+		if not isDataGood(data1,data2):
 			return False
 	
 	
@@ -321,15 +285,6 @@ def isDup_2(data1, data2, min_ratio = 90):
 		if isLoja:
 			if not isSameNumber(data1['name'],data2['name'],'loja'):
 				return False
-	
-	
-		if 'is_parent' in data1 and 'is_parent' in data2:
-			if data1['is_parent'] != data2['is_parent']:
-				return False
-		
-		if 'ent_type' in data1 and 'ent_type' in data2:
-			if data1['ent_type'] != data2['ent_type']:
-				return False
 		
 		return True
 		
@@ -338,45 +293,19 @@ def isDup_2(data1, data2, min_ratio = 90):
 
 # returns true if similar
 # data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-def isDup_3(data1, data2, min_size = 4):
+def isDup_3(data1, data2, min_size = 4, checkdata = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if 'address' not in data1 or 'address' not in data2:
 		raise RuntimeError('Error: missing address(s)!')
 	
 	
-	if 'nif' in data1 and 'nif' not in data2:
-		return False
-	if 'nif' not in data1 and 'nif' in data2:
-		return False	
-		
-	if 'is_parent' in data1 and 'is_parent' not in data2:
-		return False
-	if 'is_parent' not in data1 and 'is_parent' in data2:
-		return False
-		
-	if 'ent_type' in data1 and 'ent_type' not in data2:
-		return False
-	if 'ent_type' not in data1 and 'ent_type' in data2:
-		return False					
-
-	# if nifs <> and not false => False
-	if 'nif' in data1 and 'nif' in data2:
-		if data1['nif'] != data2['nif']:
+	if checkdata:
+		if not isDataGood(data1,data2):
 			return False
 			
 
-	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):
-	
-		if 'is_parent' in data1 and 'is_parent' in data2:
-			if data1['is_parent'] != data2['is_parent']:
-				return False
-		
-		if 'ent_type' in data1 and 'ent_type' in data2:
-			if data1['ent_type'] != data2['ent_type']:
-				return False
-		
-		
+	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
 		return True
 		
 	return False
@@ -391,6 +320,9 @@ def isDup_3(data1, data2, min_size = 4):
 	
 def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True):
 
+	if not isDataGood(data1,data2):
+		return False
+
 	if sanitize:
 		if 'name' in data1:
 			data1['name'] = sanitizeStr(data1['name'])		
@@ -404,14 +336,14 @@ def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[]
 	for algo in order:
 		if algo == 0 and 0 not in ignore:
 			try:
-				if isDup_0(data1, data2, min_ratio):
+				if isDup_0(data1, data2, min_ratio, checkdata = False):
 					return {"DUPLICATED":1,"ALGO":0}
 			except Exception as e:
 				pass
 
 		if algo == 1 and 1 not in ignore:
 			try:
-				if isDup_1(data1, data2, max_radius):
+				if isDup_1(data1, data2, max_radius, checkdata = False):
 					return {"DUPLICATED":1,"ALGO":1}
 			except Exception as e:
 				pass
@@ -430,7 +362,7 @@ def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[]
 					if 'address' in data2:
 						d2['address'] = removeAllSpaces(data2['address'])
 
-				if isDup_2(d1, d2, min_ratio):
+				if isDup_2(d1, d2, min_ratio, checkdata = False):
 					return {"DUPLICATED":1,"ALGO":2}
 			except Exception as e:
 				pass	
@@ -438,7 +370,7 @@ def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[]
 
 		if algo == 3 and 3 not in ignore:
 			try:
-				if isDup_3(data1, data2, min_size):
+				if isDup_3(data1, data2, min_size, checkdata = False):
 					return {"DUPLICATED":1,"ALGO":3}			
 			except Exception as e:
 				pass

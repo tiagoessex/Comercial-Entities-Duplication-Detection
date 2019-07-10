@@ -10,7 +10,7 @@ print (duplicated.__version__)
 d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
 d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
 
-print (duplicated.isDup(d1,d2))	# returns {'DUPLICATED': 0}
+print (duplicated.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 
 d1 = {'name':"a loja 1 a treta", 'address':'r. da cdsxczxcds n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10,"lat":20}
 d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10.005,"lat":20}
