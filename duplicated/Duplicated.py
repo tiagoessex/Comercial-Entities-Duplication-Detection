@@ -250,28 +250,24 @@ def isDup_0(data1, data2, min_ratio = 90, checkdata = True):
 
 # returns true if similar
 # data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
-# if checkname then if (lat,lon)1 ~(lat,lon)2 then if getRatioNome(name1, name2) > 90 then true
+# if checkname then if (lat,lon)1 ~(lat,lon)2 then if getRatioNome(name1, name2) > 90 or isNameIn then true
 def isDup_1(data1, data2, max_radius = 50, checkdata = True, checkname = False):
 	if 'lat' not in data1 or 'lat' not in data2:
 		raise RuntimeError('Error: missing latitude(s)!')
 	if 'lon' not in data1 or 'lon' not in data2:
-		raise RuntimeError('Error: missing longitude(s)!')
-	
-	
+		raise RuntimeError('Error: missing longitude(s)!')	
 	
 	if checkdata:
 		if not isDataGood(data1,data2):
 			return False
-	
-	
-	
+		
 	coords_1 = (data1['lat'],data1['lon'])
 	coords_2 = (data2['lat'],data2['lon'])
 	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:
 		
 		if checkname and data1['name'] and data2['name']:
-			if getRatioNome(data1['name'],data2['name']) < 90:
-				return False
+			return (getRatioNome(data1['name'],data2['name']) > 90 or isNameIn(data1['name'],data2['name'],4))
+
 				
 		return True
 		
@@ -338,7 +334,7 @@ def isDup_3(data1, data2, min_size = 4, checkdata = True):
 	
 	
 	
-def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True):
+def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True, checkname = False):
 
 
 	if not isDataGood(data1,data2):
@@ -364,7 +360,7 @@ def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[]
 
 		if algo == 1 and 1 not in ignore:
 			try:
-				if isDup_1(data1, data2, max_radius, checkdata = False):
+				if isDup_1(data1, data2, max_radius, checkdata = False, checkname = checkname):
 					return {"DUPLICATED":1,"ALGO":1}
 			except Exception as e:
 				pass
@@ -419,3 +415,9 @@ d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, por
     
 print (isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 '''
+
+
+d1 = {'name': 'john doe something', 'lon':8.0,'lat':40.0}
+d2 = {'name': 'john do4 something', 'lon':8.0,'lat':40.0}
+	
+print(isDup_1(d1,d2,checkname=True ))
