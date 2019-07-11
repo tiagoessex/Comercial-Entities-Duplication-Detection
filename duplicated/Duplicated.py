@@ -416,8 +416,9 @@ d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, por
 print (isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 '''
 
-
+'''
 d1 = {'name': 'john doe something', 'lon':8.0,'lat':40.0}
 d2 = {'name': 'john do4 something', 'lon':8.0,'lat':40.0}
 	
 print(isDup_1(d1,d2,checkname=True ))
+'''
