@@ -443,12 +443,13 @@ def isDup(	data1,
 						d1['name'] = removeAllSpaces(data1['name'])		
 					if 'name' in data2:
 						d2['name'] = removeAllSpaces(data2['name'])
-					if 'address' in data1:
-						d1['address'] = removeAllSpaces(data1['address'])
-					if 'address' in data2:
-						d2['address'] = removeAllSpaces(data2['address'])
+					if check_addresses:
+						if 'address' in data1:
+							d1['address'] = removeAllSpaces(data1['address'])
+						if 'address' in data2:
+							d2['address'] = removeAllSpaces(data2['address'])
 
-				if isDup_2(d1, d2, min_ratio, checkdata = False):
+				if isDup_2(d1, d2, min_ratio, checkdata = False, check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":2}
 			except Exception as e:
 				pass	
@@ -456,7 +457,7 @@ def isDup(	data1,
 
 		if algo == 3 and 3 not in ignore:
 			try:
-				if isDup_3(data1, data2, min_size, checkdata = False):
+				if isDup_3(data1, data2, min_size, checkdata = False, check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":3}			
 			except Exception as e:
 				pass
