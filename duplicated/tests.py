@@ -444,7 +444,7 @@ def runTests():
 	else:
 		print ("TEST 2 [NOT OK]")
 
-	if test3_0() and test3_1() and test3_2() and test3_3():# and test3_4() and test3_5() and test3_6() and test3_7() and test3_8():
+	if test3_0() and test3_1() and test3_2() and test3_3() and test3_4() and test3_5() and test3_6() and test3_7() and test3_8():
 		print ("TEST 3 [OK]")
 	else:
 		print ("TEST 3 [NOT OK]")

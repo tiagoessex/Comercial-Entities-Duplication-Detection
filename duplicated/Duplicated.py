@@ -336,13 +336,28 @@ def isDup_3(data1, data2, min_size = 4, checkdata = True, check_addresses = True
 		if not isDataGood(data1,data2):
 			return False			
 
+	if check_addresses:
+		if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
+			return True
+	else:
+		if isNameIn(data1['name'],data2['name'],4):	
+			return True
+	
+	'''
 	if isNameIn(data1['name'],data2['name'],min_size):
 		if check_addresses:
 			if isAddressIn(data1['address'],data2['address'],min_size):	
 				return True
+			else:
+				return False
 		else:
 			return True
-
+	'''
+	'''
+	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
+		return True
+	'''
+	
 	return False
 
 
