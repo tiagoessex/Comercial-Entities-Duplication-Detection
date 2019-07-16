@@ -6,7 +6,8 @@ Version: 0.0.1
 
 * Main function:
 
-       isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore = [], order = [0,1,2,3], sanitize = True)
+       isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore = [], order = [0,1,2,3], sanitize = True, checkname = False,
+			check_addresses = True)
 
 * Where:
 	*  *data1* and *data2* are dictionaries:
@@ -18,7 +19,8 @@ Version: 0.0.1
 	*	*ignore*: list of algorithms to ignore
 	*	*order*: algorithm's application order
 	*   *sanitize*: is input is not sanitized, that is, if both the addresses and names are already processed or not (lowercase, extra-spaces removed, ...). 
-
+	*	*checkname*: should algorithm 1 check not only the distance but also the name? (algo 1)
+	*	*check_addresses*: check names and addresses or only the names? (algo 0,2,3)
 
 # Returns:
 
@@ -28,15 +30,15 @@ Version: 0.0.1
 * Else, returns: *{"DUPLICATED":0}*
 
 # Notes:
-* Albeit all input fields are optional, algorithm selection depends on them.
+* Albeit all input fields are optional, algorithm selection depends on them. For example, if no name is given, then only algorithm 1 will be applied.
 * *IF A FIELD HAS NO VALUE, THEN DO NOT SET IT TO NONE, JUST DO NOT INSERTED IT IN THE DATA STRUCTURE* - use the createData() function to prevent any problem.
 
 # Algorithms:
 
-* Algo 1: Levenshtein over *names* and *addresses*
+* Algo 1: Levenshtein over *names* and, optionally also *addresses*
 * Algo 2: Distance between two set of coordinates is less than X meters
-* Algo 3: Levenshtein over the phonetic string of the *names* and *addresses*
-* Algo 4: *name* and *address* of entity X is contained or contains the *name* and *address* of entity Y.
+* Algo 3: Levenshtein over the phonetic string of the *names* and, optionally also *addresses*
+* Algo 4: *name* and, optionally also *address* of entity X is contained or contains the *name* and, optionally also  *address* of entity Y.
 
 
 # Requirements
@@ -61,12 +63,13 @@ Version: 0.0.1
 
 
     from Duplicated import *
-    	
+    
+    # create the data structures
 	d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal')
 	d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal')
 	
-	# sanitize ... only if needed it
-	# note that if isDup_2 => also requires remove_all_spaces = False
+	# sanitize ... only if needed
+	# note that if isDup_2 => also set remove_all_spaces = False
 	d1['name'] = sanitizeStr(d1['name'])
 	d2['name'] = sanitizeStr(d2['name'])
 	d1['address'] = sanitizeStr(d1['address'])

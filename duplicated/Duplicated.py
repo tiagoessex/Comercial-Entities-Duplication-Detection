@@ -1,5 +1,10 @@
 ####################################################################
 #
+#	Notes:
+#		- this module was developed for a very specific application
+#			where ... 
+#
+#
 #	install:
 # 		pip install fuzzywuzzy
 # 		pip install python-Levenshtein
@@ -97,7 +102,7 @@ def keepIfMinSize(s,n):
 	return [s1 for s1 in s if (len(s1) >= n or not s1.isalpha()) ]
 
 
-# prepare/clean
+# prepare/clean - remove/replace
 def sanitizeStr(data, remove_all_spaces = False, replace_abrv = False):
 	temp = data.lower()	
 	temp = replacePTChars(temp)
@@ -191,7 +196,6 @@ def isDataGood(data1,data2):
 	if 'ent_type' not in data1 and 'ent_type' in data2:
 		return False
 			
-	# if nifs <> and not false => False
 	if 'nif' in data1 and 'nif' in data2:
 		if data1['nif'] != data2['nif']:
 			return False
@@ -213,11 +217,13 @@ def isDataGood(data1,data2):
 # returns true if similar
 # data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
 # if nif or is_parent or ent_type are mising from 1 ent => different
-def isDup_0(data1, data2, min_ratio = 90, checkdata = True):
+# if check_addresses => check both name and address
+def isDup_0(data1, data2, min_ratio = 90, checkdata = True, check_addresses = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
-	if 'address' not in data1 or 'address' not in data2:
-		raise RuntimeError('Error: missing address(s)!')
+	if check_addresses:
+		if 'address' not in data1 or 'address' not in data2:
+			raise RuntimeError('Error: missing address(s)!')
 
 	if checkdata:
 		if not isDataGood(data1,data2):
@@ -232,8 +238,11 @@ def isDup_0(data1, data2, min_ratio = 90, checkdata = True):
 	if ' loja ' in data1['name']:
 		isLoja = True
 	
-	
-	if getRatioNome(data1['name'],data2['name']) > min_ratio and getRatioMorada( data1['address'], data2['address']) > min_ratio:
+	if check_addresses:
+		comp_result = getRatioNome(data1['name'],data2['name']) > min_ratio and getRatioMorada( data1['address'], data2['address']) > min_ratio
+	else:
+		comp_result = getRatioNome(data1['name'],data2['name']) > min_ratio
+	if comp_result:
 		if isBar:
 			if not isSameNumber(data1['name'],data2['name'],'bar'):
 				return False
@@ -277,11 +286,12 @@ def isDup_1(data1, data2, max_radius = 50, checkdata = True, checkname = False):
 # returns true if similar
 # it only works until the first space => remove all spaces
 # data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-def isDup_2(data1, data2, min_ratio = 90, checkdata = True):
+def isDup_2(data1, data2, min_ratio = 90, checkdata = True, check_addresses = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
-	if 'address' not in data1 or 'address' not in data2:
-		raise RuntimeError('Error: missing address(s)!')			
+	if check_addresses:
+		if 'address' not in data1 or 'address' not in data2:
+			raise RuntimeError('Error: missing address(s)!')			
 	
 	if checkdata:
 		if not isDataGood(data1,data2):
@@ -295,8 +305,12 @@ def isDup_2(data1, data2, min_ratio = 90, checkdata = True):
 	if ' loja ' in data1['name']:
 		isLoja = True
 	
+	if check_addresses:
+		comp_result = getPhoneticsRatioNome(data1['name'],data2['name']) > min_ratio and getPhoneticsRatioNome(data1['address'],data2['address']) > min_ratio
+	else:
+		comp_result = getPhoneticsRatioNome(data1['name'],data2['name']) > min_ratio
 	
-	if getPhoneticsRatioNome(data1['name'],data2['name']) > min_ratio and getPhoneticsRatioNome(data1['address'],data2['address']) > min_ratio:
+	if comp_result:
 		if isBar:
 			if not isSameNumber(data1['name'],data2['name'],'bar'):
 				return False
@@ -311,19 +325,24 @@ def isDup_2(data1, data2, min_ratio = 90, checkdata = True):
 
 # returns true if similar
 # data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-def isDup_3(data1, data2, min_size = 4, checkdata = True):
+def isDup_3(data1, data2, min_size = 4, checkdata = True, check_addresses = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
-	if 'address' not in data1 or 'address' not in data2:
-		raise RuntimeError('Error: missing address(s)!')	
+	if check_addresses:
+		if 'address' not in data1 or 'address' not in data2:
+			raise RuntimeError('Error: missing address(s)!')	
 	
 	if checkdata:
 		if not isDataGood(data1,data2):
 			return False			
 
-	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
-		return True
-		
+	if isNameIn(data1['name'],data2['name'],min_size):
+		if check_addresses:
+			if isAddressIn(data1['address'],data2['address'],min_size):	
+				return True
+		else:
+			return True
+
 	return False
 
 
@@ -331,29 +350,64 @@ def isDup_3(data1, data2, min_size = 4, checkdata = True):
 ##################
 # MAIN DUP FUNC  #
 ##################
-	
-	
-	
-def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[], order = [0,1,2,3], sanitize = True, checkname = False):
 
 
+def isDup(	data1, 
+			data2, 
+			min_ratio = 90, 
+			max_radius = 50, 
+			min_size = 4, 
+			ignore=[], 
+			order = [0,1,2,3], 
+			sanitize = True, 
+			checkname = False,
+			check_addresses = True):
+
+	"""
+		main function ...
+		
+		
+		data1: entity's 1 data, in json
+		data2: entity's 2 data, in json
+		min_ratio: minimum ratio for the fuzz.ratio (algo 0 and 2)
+		max_radius: maximum distance in meters, to consider both entities 
+					to be at the same place (algo 1)
+		min_size: descart all words of size lesser than 4 (algo 3)
+		ignore: list of algorithms to ignore
+		order: which order the algorithms will be applied
+		sanitize: sanitize the entry data (names and addresses) - remove 
+					extra spaces, special chars, ...
+		checkname: should algorithm 1 check not only the distance but 
+					also the name? (algo 1)
+		check_addresses: check names and addresses or only the names? (algo 0,2,3)
+	"""
+
+	# check 'ent_type','nif','is_parent'
+	# if one of them is missing in one entity but is present in the 
+	# other then consider both entities different
+	# if they are present in both entities, then check if they are the 
+	# same ... if not, then they are different
 	if not isDataGood(data1,data2):
 		return False
 
+
+	
 	if sanitize:
 		if 'name' in data1:
 			data1['name'] = sanitizeStr(data1['name'])		
 		if 'name' in data2:
 			data2['name'] = sanitizeStr(data2['name'])
-		if 'address' in data1:
-			data1['address'] = sanitizeStr(data1['address'], replace_abrv = True)
-		if 'address' in data2:
-			data2['address'] = sanitizeStr(data2['address'], replace_abrv = True)
+		if check_addresses:
+			if 'address' in data1:
+				data1['address'] = sanitizeStr(data1['address'], replace_abrv = True)
+			if 'address' in data2:
+				data2['address'] = sanitizeStr(data2['address'], replace_abrv = True)
 	
 	for algo in order:
 		if algo == 0 and 0 not in ignore:
 			try:
-				if isDup_0(data1, data2, min_ratio, checkdata = False):
+				if isDup_0(data1, data2, min_ratio, checkdata = False, 
+				check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":0}
 			except Exception as e:
 				pass
@@ -396,10 +450,11 @@ def isDup(data1, data2, min_ratio = 90, max_radius = 50, min_size = 4, ignore=[]
 
 
 '''
-d1 = {'name':"a loja 1 a treta", 'address':'r. da cdsxczxcds n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10,"lat":20}
-d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10.00005,"lat":20}
-
-print (isDup(d1,d2, ignore=[1], min_ratio = 80))	# returns {'DUPLICATED': 0}
+d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10,"lat":20}
+#d2 = {'name':"a loja 1 da treta", 'address':None, "nif":123456, "is_parent":1, "lon":15.00005,"lat":20}
+d2 = {'name':"a loja 1 da treta", 'address':None, "nif":123456, "is_parent":1, "lon":15.00005,"lat":20}
+print (isDup(d1,d2, min_ratio = 80, check_addresses = False))	# returns {'DUPLICATED': 1, 'ALGO':0}
+#print (isDup(d1,d2, min_ratio = 80, check_addresses = True))	# returns {'DUPLICATED': 0}
 '''
 
 
