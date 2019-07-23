@@ -361,16 +361,16 @@ def isDup(	data1,
 			try:
 				d1 = data1.copy()
 				d2 = data2.copy()
-				if sanitize:
-					if 'name' in data1 and data1['name']:
-						d1['name'] = removeAllSpaces(data1['name'])		
-					if 'name' in data2 and data2['name']:
-						d2['name'] = removeAllSpaces(data2['name'])
-					if check_addresses:
-						if 'address' in data1 and data1['address']:
-							d1['address'] = removeAllSpaces(data1['address'])
-						if 'address' in data2 and data2['address']:
-							d2['address'] = removeAllSpaces(data2['address'])
+				#if sanitize:
+				if 'name' in data1 and data1['name']:
+					d1['name'] = removeAllSpaces(data1['name'])		
+				if 'name' in data2 and data2['name']:
+					d2['name'] = removeAllSpaces(data2['name'])
+				if check_addresses:
+					if 'address' in data1 and data1['address']:
+						d1['address'] = removeAllSpaces(data1['address'])
+					if 'address' in data2 and data2['address']:
+						d2['address'] = removeAllSpaces(data2['address'])
 
 				if isDup_2(d1, d2, min_ratio, check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":2}
@@ -412,4 +412,11 @@ d2['address'] = sanitizeStr(d2['address'], replace_abrv = True)
 	
 print( isDup_0(d1,d2,min_ratio=85))
 '''
-
+'''
+qwe1 = 'address 1 qwe dfsd'
+qwe2 = 'address'
+qwe3 = None
+print (len(qwe1.split()))
+print (len(qwe2.split()))
+print (len(qwe3.split()))
+'''
