@@ -1,8 +1,8 @@
 """
 
-Input data (all fields optional):
-	data1: {name, address, nif, is_parent, ent_type, lat, lon}
-	data2: {name, address, nif, is_parent, ent_type, lat, lon}
+Input data:
+	data1: {name, address, lat, lon}
+	data2: {name, address, lat, lon}
 
 
 Returns:
@@ -20,8 +20,8 @@ Usage example:
 
 	using the main function:
 	
-		d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
-		d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1}
+		d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal'}
+		d2 = {'name':"a loja 1 da treta", 'address':'av. da boavista n 50, porto, portugal'}
 
 		print (t.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 
@@ -47,7 +47,7 @@ requirements:
 
 from .Duplicated import *
 
-__version__ = "1.0.1"
+__version__ = "2.0.0"
 
 
 

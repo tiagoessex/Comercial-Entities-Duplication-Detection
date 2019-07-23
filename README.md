@@ -1,6 +1,6 @@
 
 
-Version: 1.0.1
+Version: 2.0.0
 
 # Input data (all fields opctional):
 
@@ -18,7 +18,7 @@ Version: 1.0.1
 	*	*min_size*: all words size less min_size are eliminated (algo 3)
 	*	*ignore*: list of algorithms to ignore
 	*	*order*: algorithm's application order
-	*   *sanitize*: is input is not sanitized, that is, if both the addresses and names are already processed or not (lowercase, extra-spaces removed, ...). 
+	*   *sanitize*: sanitize names and addresses? (lowercase, extra-spaces removed, ...). 
 	*	*checkname*: should algorithm 1 check not only the distance but also the name? (algo 1)
 	*	*check_addresses*: check names and addresses or only the names? (algo 0,2,3)
 
@@ -31,7 +31,7 @@ Version: 1.0.1
 
 # Notes:
 * Albeit all input fields are optional, algorithm selection depends on them. For example, if no name is given, then only algorithm 1 will be applied.
-* *IF A FIELD HAS NO VALUE, THEN DO NOT SET IT TO NONE, JUST DO NOT INSERTED IT IN THE DATA STRUCTURE* - use the createData() function to prevent any problem.
+
 
 # Algorithms:
 
@@ -53,8 +53,8 @@ Version: 1.0.1
 
     import duplicated as duplicated
     	
-	d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
-	d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
+	d1 = {'name':'a loja 1 a treta', 'address': 'r. da boavista n 50, porto, portugal'}
+	d2 = {'name':'a loja 1 da treta', 'address': 'av. da boavista n 50, porto, portugal'}
     
     print (duplicated.isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
 
@@ -64,16 +64,16 @@ Version: 1.0.1
 
     from Duplicated import *
     
-    # create the data structures
-	d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal')
-	d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal')
-	
+	# create the data structures
+	d1 = {'name':'a loja 1 a treta', 'address': 'r. da boavista n 50, porto, portugal'}
+	d2 = {'name':'a loja 1 da treta', 'address': 'av. da boavista n 50, porto, portugal'}
+		
 	# sanitize ... only if needed
-	# note that if isDup_2 => also set remove_all_spaces = False
+	# note that if isDup_2 => also set remove_all_spaces = True
 	d1['name'] = sanitizeStr(d1['name'])
 	d2['name'] = sanitizeStr(d2['name'])
-	d1['address'] = sanitizeStr(d1['address'])
-	d2['address'] = sanitizeStr(d2['address'])
+	d1['address'] = sanitizeStr(d1['address'], replace_abrv = True)
+	d2['address'] = sanitizeStr(d2['address'], replace_abrv = True)
 	
 	if isDup_0(d1,d2,min_ratio=85) and not isDup_0(d1,d2,min_ratio=90):
 		return True

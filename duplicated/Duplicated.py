@@ -1,8 +1,5 @@
 ####################################################################
 #
-#	Notes:
-#		- this module was developed for a very specific application
-#			where ... 
 #
 #
 #	install:
@@ -119,7 +116,7 @@ def sanitizeStr(data, remove_all_spaces = False, replace_abrv = False):
 ##############
 # OPERATIONS #
 ##############
-
+'''
 def createData(name = None, address = None, is_parent = None, nif = None, ent_type = None):
 	data = {}
 	
@@ -135,7 +132,7 @@ def createData(name = None, address = None, is_parent = None, nif = None, ent_ty
 		data['ent_type'] = ent_type
 	
 	return data
-
+'''
 
 def getRatioNome(str1, str2):
 	return fuzz.ratio(str1,str2)
@@ -176,58 +173,19 @@ def isAddressIn(s1, s2 ,n):
 	return set(temp1).issubset(temp2) or set(temp2).issubset(temp1)
 
 
-# if any of the fields nif/is_parent/ent_type are present in one entity
-# but not the other then false
-# if any of those are present and both are different then false
-# else true
-def isDataGood(data1,data2):
-	if 'nif' in data1 and 'nif' not in data2:
-		return False
-	if 'nif' not in data1 and 'nif' in data2:
-		return False		
-		
-	if 'is_parent' in data1 and 'is_parent' not in data2:
-		return False
-	if 'is_parent' not in data1 and 'is_parent' in data2:
-		return False
-		
-	if 'ent_type' in data1 and 'ent_type' not in data2:
-		return False
-	if 'ent_type' not in data1 and 'ent_type' in data2:
-		return False
-			
-	if 'nif' in data1 and 'nif' in data2:
-		if data1['nif'] != data2['nif']:
-			return False
-	
-	if 'is_parent' in data1 and 'is_parent' in data2:
-		if data1['is_parent'] != data2['is_parent']:
-			return False
-		
-	if 'ent_type' in data1 and 'ent_type' in data2:
-		if data1['ent_type'] != data2['ent_type']:
-			return False
-	
-	return True
-
 ##############
 # ALGO IMPL  #
 ##############
 
 # returns true if similar
-# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-# if nif or is_parent or ent_type are mising from 1 ent => different
+# data: {name=not null}
 # if check_addresses => check both name and address
-def isDup_0(data1, data2, min_ratio = 90, checkdata = True, check_addresses = True):
+def isDup_0(data1, data2, min_ratio = 90, check_addresses = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if check_addresses:
 		if 'address' not in data1 or 'address' not in data2:
 			raise RuntimeError('Error: missing address(s)!')
-
-	if checkdata:
-		if not isDataGood(data1,data2):
-			return False
 
 
 	isBar = False
@@ -258,18 +216,15 @@ def isDup_0(data1, data2, min_ratio = 90, checkdata = True, check_addresses = Tr
 
 
 # returns true if similar
-# data: {nif=not null, lat=not null, lon=not null, is_parent=null, ent_type=null}
+# data: {lat=not null, lon=not null}
 # if checkname then if (lat,lon)1 ~(lat,lon)2 then if getRatioNome(name1, name2) > 90 or isNameIn then true
-def isDup_1(data1, data2, max_radius = 50, checkdata = True, checkname = False):
+def isDup_1(data1, data2, max_radius = 50, checkname = False):
 	if 'lat' not in data1 or 'lat' not in data2:
 		raise RuntimeError('Error: missing latitude(s)!')
 	if 'lon' not in data1 or 'lon' not in data2:
 		raise RuntimeError('Error: missing longitude(s)!')	
 	
-	if checkdata:
-		if not isDataGood(data1,data2):
-			return False
-		
+	
 	coords_1 = (data1['lat'],data1['lon'])
 	coords_2 = (data2['lat'],data2['lon'])
 	if geopy.distance.distance(coords_1, coords_2).meters < max_radius:
@@ -285,17 +240,14 @@ def isDup_1(data1, data2, max_radius = 50, checkdata = True, checkname = False):
 
 # returns true if similar
 # it only works until the first space => remove all spaces
-# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-def isDup_2(data1, data2, min_ratio = 90, checkdata = True, check_addresses = True):
+# data: {name=not null}
+def isDup_2(data1, data2, min_ratio = 90, check_addresses = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if check_addresses:
 		if 'address' not in data1 or 'address' not in data2:
 			raise RuntimeError('Error: missing address(s)!')			
 	
-	if checkdata:
-		if not isDataGood(data1,data2):
-			return False	
 	
 	isBar = False
 	isLoja = False	
@@ -324,39 +276,20 @@ def isDup_2(data1, data2, min_ratio = 90, checkdata = True, check_addresses = Tr
 
 
 # returns true if similar
-# data: {name=not null, address=not null, nif=null, is_parent=null, ent_type=null}
-def isDup_3(data1, data2, min_size = 4, checkdata = True, check_addresses = True):
+# data: {name=not null}
+def isDup_3(data1, data2, min_size = 4, check_addresses = True):
 	if 'name' not in data1 or 'name' not in data2:
 		raise RuntimeError('Error: missing name(s)!')
 	if check_addresses:
 		if 'address' not in data1 or 'address' not in data2:
 			raise RuntimeError('Error: missing address(s)!')	
 	
-	if checkdata:
-		if not isDataGood(data1,data2):
-			return False			
-
 	if check_addresses:
 		if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
 			return True
 	else:
 		if isNameIn(data1['name'],data2['name'],4):	
 			return True
-	
-	'''
-	if isNameIn(data1['name'],data2['name'],min_size):
-		if check_addresses:
-			if isAddressIn(data1['address'],data2['address'],min_size):	
-				return True
-			else:
-				return False
-		else:
-			return True
-	'''
-	'''
-	if isNameIn(data1['name'],data2['name'],4) and isAddressIn(data1['address'],data2['address'],4):	
-		return True
-	'''
 	
 	return False
 
@@ -397,39 +330,29 @@ def isDup(	data1,
 		check_addresses: check names and addresses or only the names? (algo 0,2,3)
 	"""
 
-	# check 'ent_type','nif','is_parent'
-	# if one of them is missing in one entity but is present in the 
-	# other then consider both entities different
-	# if they are present in both entities, then check if they are the 
-	# same ... if not, then they are different
-	if not isDataGood(data1,data2):
-		return False
-
-
 	
 	if sanitize:
-		if 'name' in data1:
+		if 'name' in data1 and data1['name']:
 			data1['name'] = sanitizeStr(data1['name'])		
-		if 'name' in data2:
+		if 'name' in data2 and data2['name']:
 			data2['name'] = sanitizeStr(data2['name'])
 		if check_addresses:
-			if 'address' in data1:
+			if 'address' in data1 and data1['address']:
 				data1['address'] = sanitizeStr(data1['address'], replace_abrv = True)
-			if 'address' in data2:
+			if 'address' in data2 and data2['address']:
 				data2['address'] = sanitizeStr(data2['address'], replace_abrv = True)
 	
 	for algo in order:
 		if algo == 0 and 0 not in ignore:
 			try:
-				if isDup_0(data1, data2, min_ratio, checkdata = False, 
-				check_addresses = check_addresses):
+				if isDup_0(data1, data2, min_ratio, check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":0}
 			except Exception as e:
 				pass
 
 		if algo == 1 and 1 not in ignore:
 			try:
-				if isDup_1(data1, data2, max_radius, checkdata = False, checkname = checkname):
+				if isDup_1(data1, data2, max_radius, checkname = checkname):
 					return {"DUPLICATED":1,"ALGO":1}
 			except Exception as e:
 				pass
@@ -439,17 +362,17 @@ def isDup(	data1,
 				d1 = data1.copy()
 				d2 = data2.copy()
 				if sanitize:
-					if 'name' in data1:
+					if 'name' in data1 and data1['name']:
 						d1['name'] = removeAllSpaces(data1['name'])		
-					if 'name' in data2:
+					if 'name' in data2 and data2['name']:
 						d2['name'] = removeAllSpaces(data2['name'])
 					if check_addresses:
-						if 'address' in data1:
+						if 'address' in data1 and data1['address']:
 							d1['address'] = removeAllSpaces(data1['address'])
-						if 'address' in data2:
+						if 'address' in data2 and data2['address']:
 							d2['address'] = removeAllSpaces(data2['address'])
 
-				if isDup_2(d1, d2, min_ratio, checkdata = False, check_addresses = check_addresses):
+				if isDup_2(d1, d2, min_ratio, check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":2}
 			except Exception as e:
 				pass	
@@ -457,7 +380,7 @@ def isDup(	data1,
 
 		if algo == 3 and 3 not in ignore:
 			try:
-				if isDup_3(data1, data2, min_size, checkdata = False, check_addresses = check_addresses):
+				if isDup_3(data1, data2, min_size, check_addresses = check_addresses):
 					return {"DUPLICATED":1,"ALGO":3}			
 			except Exception as e:
 				pass
@@ -465,31 +388,27 @@ def isDup(	data1,
 
 
 
-'''
-d1 = {'name':"a loja 1 a treta", 'address':'r. da boavista n 50, porto, portugal', "nif":123456, "is_parent":1, "lon":10,"lat":20}
-#d2 = {'name':"a loja 1 da treta", 'address':None, "nif":123456, "is_parent":1, "lon":15.00005,"lat":20}
-d2 = {'name':"a loja 1 da treta", 'address':None, "nif":123456, "is_parent":1, "lon":15.00005,"lat":20}
-print (isDup(d1,d2, min_ratio = 80, check_addresses = False))	# returns {'DUPLICATED': 1, 'ALGO':0}
-#print (isDup(d1,d2, min_ratio = 80, check_addresses = True))	# returns {'DUPLICATED': 0}
-'''
 
-
-'''
-data = createData(name = 'john doe', address = 'main st.', nif = '123456789')
-print (data)
-print (data['nif'])
-'''
-
-'''
-d1 = createData(name = 'a loja 1 a treta', address = 'r. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
-d2 = createData(name = 'a loja 1 da treta', address = 'av. da boavista n 50, porto, portugal', nif = '123456', is_parent = 1)
-    
-print (isDup(d1,d2))	# returns {'DUPLICATED': 1, 'ALGO': 3}
-'''
 
 '''
 d1 = {'name': 'john doe something', 'lon':8.0,'lat':40.0}
-d2 = {'name': 'john do4 something', 'lon':8.0,'lat':40.0}
+d2 = {'name': 'joqw do something', 'lon':8.0,'lat':40.0}
 	
 print(isDup_1(d1,d2,checkname=True ))
+'''
+
+
+'''
+# create the data structures
+d1 = {'name':'a loja 1 a treta', 'address': 'r. da boavista n 50, porto, portugal'}
+d2 = {'name':'a loja 1 da treta', 'address': 'av. da boavista n 50, porto, portugal'}
+	
+# sanitize ... only if needed
+# note that if isDup_2 => also set remove_all_spaces = True
+d1['name'] = sanitizeStr(d1['name'])
+d2['name'] = sanitizeStr(d2['name'])
+d1['address'] = sanitizeStr(d1['address'], replace_abrv = True)
+d2['address'] = sanitizeStr(d2['address'], replace_abrv = True)
+	
+print( isDup_0(d1,d2,min_ratio=85))
 '''
