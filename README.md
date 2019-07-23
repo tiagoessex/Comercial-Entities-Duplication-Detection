@@ -35,10 +35,10 @@ Version: 2.0.0
 
 # Algorithms:
 
-* Algo 1: Levenshtein over *names* and, optionally also *addresses*
-* Algo 2: Distance between two set of coordinates is less than X meters
-* Algo 3: Levenshtein over the phonetic string of the *names* and, optionally also *addresses*
-* Algo 4: *name* and, optionally also *address* of entity X is contained or contains the *name* and, optionally also  *address* of entity Y.
+* Algo 0: Levenshtein over *names* and, optionally also *addresses*
+* Algo 1: Distance between two set of coordinates is less than X meters
+* Algo 2: Levenshtein over the phonetic string of the *names* and, optionally also *addresses*
+* Algo 3: *name* and, optionally also *address* of entity X is contained or contains the *name* and, optionally also  *address* of entity Y.
 
 
 # Requirements
